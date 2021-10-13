@@ -15,4 +15,17 @@ namespace opal.Models
         Stopping,
         Crashed,
     }
+
+    public static class ServerStateExtensions
+    {
+        public static bool CanStart(this ServerState state)
+        {
+            return state is ServerState.Stopped or ServerState.Crashed or ServerState.Undefined;
+        }
+
+        public static bool CanStop(this ServerState state)
+        {
+            return state is ServerState.Running;
+        }
+    }
 }

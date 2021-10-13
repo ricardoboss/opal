@@ -8,21 +8,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Remove="appsettings.json" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Include="appsettings.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </EmbeddedResource>
-    </ItemGroup>
-
-    <ItemGroup>
       <None Include="..\.editorconfig" Link=".editorconfig" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="HostedWPF" Version="2.0.3" />
+      <PackageReference Include="HostedWPF" Version="3.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
       <PackageReference Include="yapsi" Version="2.0.2" />
       <PackageReference Include="yapsi.Extensions.DependencyInjection" Version="2.0.2" />
     </ItemGroup>

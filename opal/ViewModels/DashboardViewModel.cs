@@ -43,15 +43,15 @@ namespace opal.ViewModels
             _ => throw new NotImplementedException(),
         };
 
-        public bool CanStopServer => _serverState == ServerState.Running;
-        public bool CanStartServer => _serverState is ServerState.Stopped or ServerState.Crashed;
+        public bool CanStopServer => _serverState.CanStop();
+        public bool CanStartServer => _serverState.CanStart();
 
         public DashboardViewModel(ISubscription<ServerState> serverStateSubscription, IContract<ServerCommand> serverCommandContract)
         {
             _serverStateSubscription = serverStateSubscription;
-            _serverStateSubscription.Published += ServerState_Published;
-
             _serverCommandContract = serverCommandContract;
+
+            _serverStateSubscription.Published += ServerState_Published;
         }
 
         private void ServerState_Published(ISubscription<ServerState> sender, ServerState packet)
@@ -61,17 +61,11 @@ namespace opal.ViewModels
 
         public void StartServer()
         {
-            if (!CanStartServer)
-                return;
-
             _serverCommandContract.Publish(ServerCommand.Start);
         }
 
         public void StopServer()
         {
-            if (!CanStopServer)
-                return;
-
             _serverCommandContract.Publish(ServerCommand.Stop);
         }
     }

@@ -1,5 +1,6 @@
 ﻿using HostedWpf;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -10,7 +11,7 @@ using opal.ViewModels;
 using opal.Views;
 
 using System;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows;
 
 using yapsi;
@@ -23,9 +24,13 @@ namespace opal
         public static new App Current => BaseApp.Current as App ?? throw new ApplicationException("Current Application is not an App instance!");
 
         /// <inheritdoc />
-        protected override void ConfigureServices(HostBuilderContext context, IServiceCollection collection)
-        {
-            _ = collection
+        protected override IHostBuilder ConfigureHost(IHostBuilder builder) => builder
+            .ConfigureLogging(builder => builder.AddSimpleConsole())
+            .ConfigureAppConfiguration(builder => builder
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+            )
+            .ConfigureServices(services => services
                 .AddYapsi<ServerCommand>()
                 .AddYapsi<ServerState>()
                 .AddYapsi<Exception>()
@@ -33,15 +38,9 @@ namespace opal
                 .AddTransient<MainWindow>()
                 .AddTransient<DashboardViewModel>()
                 .AddTransient<DashboardPage>()
-                .AddHostedService<SocketService>();
-        }
-
-        protected override void ConfigureLogging(HostBuilderContext context, ILoggingBuilder builder)
-        {
-            builder.AddSimpleConsole();
-
-            base.ConfigureLogging(context, builder);
-        }
+                .AddTransient<SocketService>()
+                .AddHostedService<SocketControllerService>()
+            );
 
         /// <inheritdoc />
         protected override void OnStartup(StartupEventArgs e)
