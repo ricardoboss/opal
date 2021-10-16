@@ -12,6 +12,7 @@ using opal.Views;
 
 using System;
 using System.IO;
+using System.Net.Sockets;
 using System.Windows;
 
 using yapsi;
@@ -30,17 +31,22 @@ namespace opal
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
             )
-            .ConfigureServices(services => services
-                .AddYapsi<ServerCommand>()
-                .AddYapsi<ServerState>()
-                .AddYapsi<Exception>()
-                .AddTransient<MainWindowViewModel>()
-                .AddTransient<MainWindow>()
-                .AddTransient<DashboardViewModel>()
-                .AddTransient<DashboardPage>()
-                .AddTransient<SocketService>()
-                .AddHostedService<SocketControllerService>()
-            );
+            .ConfigureServices(services =>
+            {
+                services.AddOptions<SocketServiceOptions>()
+                        .BindConfiguration("Socket");
+
+                services.AddYapsi<ServerCommand>()
+                        .AddYapsi<ServerState>()
+                        .AddYapsi<Exception>()
+                        .AddSingleSubscribeYapsi<Socket>()
+                        .AddTransient<MainWindowViewModel>()
+                        .AddTransient<MainWindow>()
+                        .AddTransient<DashboardViewModel>()
+                        .AddTransient<DashboardPage>()
+                        .AddTransient<SocketService>()
+                        .AddHostedService<SocketControllerService>();
+            });
 
         /// <inheritdoc />
         protected override void OnStartup(StartupEventArgs e)
@@ -54,14 +60,6 @@ namespace opal
             {
                 logger.LogError(exception, "Exception published");
             };
-
-            var stateSubscription = Services.GetRequiredService<ISubscription<ServerState>>();
-            stateSubscription.Published += (sender, state) =>
-            {
-                logger.LogInformation("New server state: {state}", state);
-            };
-
-            logger.LogInformation("Startup complete. Launching MainWindow");
 
             MainWindow = Services.GetRequiredService<MainWindow>();
             MainWindow.Show();

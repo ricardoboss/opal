@@ -14,7 +14,7 @@ using yapsi;
 
 namespace opal.Services
 {
-    internal class SocketControllerService : BackgroundService
+    internal class SocketControllerService : NoopBackgroundService
     {
         private readonly ISubscription<ServerCommand> _serverCommandSubscription;
         private readonly ISubscription<ServerState> _serverStateSubscription;
@@ -67,11 +67,6 @@ namespace opal.Services
             {
                 _exceptionContract.Publish(ex);
             }
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            await Task.Delay(-1, stoppingToken);
         }
     }
 }

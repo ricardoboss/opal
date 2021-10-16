@@ -19,17 +19,19 @@ namespace opal.Services
     {
         private readonly SocketServiceOptions _options;
         private Socket? _socket;
+        private readonly IContract<Socket> _clientSocketContract;
 
-        public SocketService(IOptions<SocketServiceOptions> options, IContract<ServerState> serverStateContract, IContract<Exception> exceptionContract) : base(serverStateContract, exceptionContract)
+        public SocketService(IOptions<SocketServiceOptions> options, IContract<ServerState> serverStateContract, IContract<Exception> exceptionContract, IContract<Socket> clientSocketContract) : base(serverStateContract, exceptionContract)
         {
             _options = options.Value;
+            _clientSocketContract = clientSocketContract;
         }
 
         protected override Task PrepareAsync(CancellationToken cancellationToken)
         {
             _socket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-            var address = new IPEndPoint(IPAddress.Any, 9999);
+            var address = new IPEndPoint(IPAddress.Any, _options.Port);
             _socket.Bind(address);
 
             return Task.CompletedTask;
@@ -48,7 +50,7 @@ namespace opal.Services
                 {
                     var client = await _socket.AcceptAsync(stoppingToken);
 
-                    client.Close();
+                    _clientSocketContract.Publish(client);
                 }
             }
             catch (OperationCanceledException)
